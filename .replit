@@ -29,6 +29,15 @@ task = "shell.exec"
 args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "Uu"
+mode = "sequential"
+author = 47252462
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "git remote add origin https://github.com/MoistKush/New.git git branch -M main git push -u origin main"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
