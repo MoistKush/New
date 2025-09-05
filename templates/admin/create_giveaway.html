@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Create Giveaway - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Create New Giveaway
+                </h1>
+            </div>
+
+            <!-- Create Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">
+                                <i class="bi bi-text-left me-1"></i>
+                                Giveaway Title <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="Enter giveaway title" required maxlength="200">
+                            <div class="form-text">A clear, attractive title for your giveaway</div>
+                        </div>
+
+                        <!-- Prize -->
+                        <div class="mb-3">
+                            <label for="prize" class="form-label">
+                                <i class="bi bi-trophy me-1"></i>
+                                Prize <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="prize" name="prize" 
+                                   placeholder="What's the prize?" required maxlength="500">
+                            <div class="form-text">Describe the prize participants can win</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="bi bi-text-paragraph me-1"></i>
+                                Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="4" placeholder="Optional description of the giveaway, rules, etc."></textarea>
+                            <div class="form-text">Additional details about the giveaway (optional)</div>
+                        </div>
+
+                        <!-- End Date -->
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">
+                                <i class="bi bi-calendar me-1"></i>
+                                End Date & Time <span class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
+                            <div class="form-text">When should this giveaway end?</div>
+                        </div>
+
+                        <!-- Max Entries -->
+                        <div class="mb-4">
+                            <label for="max_entries" class="form-label">
+                                <i class="bi bi-people me-1"></i>
+                                Maximum Entries (Optional)
+                            </label>
+                            <input type="number" class="form-control" id="max_entries" name="max_entries" 
+                                   min="1" placeholder="Leave empty for unlimited entries">
+                            <div class="form-text">Limit the number of people who can enter (optional)</div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Create Giveaway
+                            </button>
+                            <a href="{{ url_for('admin_giveaways') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set minimum date to current time
+document.addEventListener('DOMContentLoaded', function() {
+    const endDateInput = document.getElementById('end_date');
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    endDateInput.min = now.toISOString().slice(0, 16);
+    
+    // Set default to 7 days from now
+    const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    weekFromNow.setMinutes(weekFromNow.getMinutes() - weekFromNow.getTimezoneOffset());
+    endDateInput.value = weekFromNow.toISOString().slice(0, 16);
+});
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set minimum date to current time
+document.addEventListener('DOMContentLoaded', function() {
+    const endDateInput = document.getElementById('end_date');
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    endDateInput.min = now.toISOString().slice(0, 16);
+    
+    // Set default to 7 days from now
+    const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    weekFromNow.setMinutes(weekFromNow.getMinutes() - weekFromNow.getTimezoneOffset());
+    endDateInput.value = weekFromNow.toISOString().slice(0, 16);
+});
+</script>
+{% endblock %}

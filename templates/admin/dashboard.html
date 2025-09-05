@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Giveaway Central{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-speedometer2 me-2"></i>
+            Admin Dashboard
+        </h1>
+        <a href="{{ url_for('create_giveaway') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>
+            Create Giveaway
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="h4 mb-1">{{ total_giveaways }}</h3>
+                            <p class="text-muted mb-0">Total Giveaways</p>
+                        </div>
+                        <div class="stats-icon bg-primary">
+                            <i class="bi bi-gift"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="h4 mb-1">{{ active_giveaways }}</h3>
+                            <p class="text-muted mb-0">Active Giveaways</p>
+                        </div>
+                        <div class="stats-icon bg-success">
+                            <i class="bi bi-play-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="h4 mb-1">{{ total_users }}</h3>
+                            <p class="text-muted mb-0">Total Users</p>
+                        </div>
+                        <div class="stats-icon bg-info">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h3 class="h4 mb-1">{{ total_entries }}</h3>
+                            <p class="text-muted mb-0">Total Entries</p>
+                        </div>
+                        <div class="stats-icon bg-warning">
+                            <i class="bi bi-ticket"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        Quick Actions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('create_giveaway') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Create Giveaway
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_giveaways') }}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-list me-2"></i>
+                                Manage Giveaways
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-people me-2"></i>
+                                Manage Users
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('home') }}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-house me-2"></i>
+                                View Site
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Giveaways -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Recent Giveaways
+                    </h3>
+                    <a href="{{ url_for('admin_giveaways') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_giveaways %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Prize</th>
+                                        <th>Status</th>
+                                        <th>Entries</th>
+                                        <th>End Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for giveaway in recent_giveaways %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ giveaway.title }}</strong>
+                                            </td>
+                                            <td class="text-muted">{{ giveaway.prize }}</td>
+                                            <td>
+                                                {% if giveaway.winner_id %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-trophy me-1"></i>Complete
+                                                    </span>
+                                                {% elif giveaway.is_ended %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-clock me-1"></i>Ended
+                                                    </span>
+                                                {% elif giveaway.is_active %}
+                                                    <span class="badge bg-primary">
+                                                        <i class="bi bi-play-circle me-1"></i>Active
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-pause-circle me-1"></i>Inactive
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ giveaway.entry_count }}</td>
+                                            <td class="text-muted">
+                                                {{ giveaway.end_date.strftime('%b %d, %Y') }}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('edit_giveaway', giveaway_id=giveaway.id) }}" 
+                                                       class="btn btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    {% if not giveaway.winner_id and giveaway.entries %}
+                                                        <form method="POST" action="{{ url_for('select_winner', giveaway_id=giveaway.id) }}" 
+                                                              class="d-inline" onsubmit="return confirm('Are you sure you want to select a winner?')">
+                                                            <button type="submit" class="btn btn-outline-success">
+                                                                <i class="bi bi-trophy"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-gift display-4 text-muted mb-3"></i>
+                            <h5 class="text-muted">No Giveaways Yet</h5>
+                            <p class="text-muted">Create your first giveaway to get started!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

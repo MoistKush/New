@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-people me-2"></i>
+            Manage Users
+        </h1>
+        <div class="text-muted">
+            Total Users: {{ users.total }}
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if users.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Entries</th>
+                                <th>Wins</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if user.profile_image_url %}
+                                                <img src="{{ user.profile_image_url }}" alt="Profile" 
+                                                     class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                                     style="width: 32px; height: 32px;">
+                                                    <i class="bi bi-person text-white small"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ user.display_name }}</strong>
+                                                <br><small class="text-muted">ID: {{ user.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if user.email %}
+                                            {{ user.email }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.is_admin %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-shield-check me-1"></i>Admin
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-person me-1"></i>User
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted">
+                                        {{ user.created_at.strftime('%b %d, %Y') }}
+                                        <br><small>{{ user.created_at.strftime('%I:%M %p') }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">{{ user.entries|length }}</span>
+                                    </td>
+                                    <td>
+                                        {% set won_count = user.won_giveaways|length %}
+                                        {% if won_count > 0 %}
+                                            <span class="text-success fw-bold">
+                                                <i class="bi bi-trophy me-1"></i>{{ won_count }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.id != current_user.id %}
+                                            <form method="POST" action="{{ url_for('toggle_user_admin', user_id=user.id) }}" 
+                                                  class="d-inline" onsubmit="return confirm('Are you sure you want to {{ 'revoke' if user.is_admin else 'grant' }} admin access for {{ user.display_name }}?')">
+                                                {% if user.is_admin %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Revoke Admin">
+                                                        <i class="bi bi-shield-x"></i>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Grant Admin">
+                                                        <i class="bi bi-shield-check"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </form>
+                                        {% else %}
+                                            <span class="text-muted small">Current User</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if users.pages > 1 %}
+                    <nav aria-label="Users pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if users.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_users', page=users.prev_num) }}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in users.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != users.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_users', page=page_num) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if users.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_users', page=users.next_num) }}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-people display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No Users Found</h4>
+                    <p class="text-muted">Users will appear here as they sign up for the platform.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- User Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        User Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ users.total }}</h4>
+                                <small class="text-muted">Total Users</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-warning">
+                                    {{ users.items | selectattr('is_admin') | list | length }}
+                                </h4>
+                                <small class="text-muted">Admin Users</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Quick Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-shield-check text-warning me-2"></i>
+                            Admin users can create and manage giveaways
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-person text-secondary me-2"></i>
+                            Regular users can participate in giveaways
+                        </li>
+                        <li>
+                            <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                            You cannot modify your own admin status
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

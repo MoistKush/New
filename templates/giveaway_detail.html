@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ giveaway.title }} - Giveaway Central{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Giveaway Header -->
+            <div class="card giveaway-detail-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h1 class="h2 mb-0">{{ giveaway.title }}</h1>
+                        {% if user_entry %}
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-check-circle me-1"></i>You're In!
+                            </span>
+                        {% elif not giveaway.can_enter %}
+                            <span class="badge bg-secondary fs-6">
+                                <i class="bi bi-x-circle me-1"></i>Closed
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Prize Information -->
+                    <div class="prize-section mb-4">
+                        <h3 class="h4 text-warning mb-2">
+                            <i class="bi bi-trophy me-2"></i>Prize
+                        </h3>
+                        <p class="fs-5 mb-0">{{ giveaway.prize }}</p>
+                    </div>
+                    
+                    <!-- Description -->
+                    {% if giveaway.description %}
+                        <div class="description-section mb-4">
+                            <h4 class="h5 mb-2">Description</h4>
+                            <p class="text-muted">{{ giveaway.description }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Giveaway Stats -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card p-3 rounded bg-dark">
+                                <i class="bi bi-people text-primary"></i>
+                                <strong class="d-block">{{ giveaway.entry_count }}</strong>
+                                <small class="text-muted">Total Entries</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card p-3 rounded bg-dark">
+                                <i class="bi bi-clock text-info"></i>
+                                <strong class="d-block">{{ giveaway.end_date.strftime('%B %d, %Y') }}</strong>
+                                <small class="text-muted">Ends at {{ giveaway.end_date.strftime('%I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        {% if giveaway.max_entries %}
+                            <div class="col-md-6">
+                                <div class="stat-card p-3 rounded bg-dark">
+                                    <i class="bi bi-bar-chart text-warning"></i>
+                                    <strong class="d-block">{{ giveaway.max_entries }}</strong>
+                                    <small class="text-muted">Maximum Entries</small>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if giveaway.winner %}
+                            <div class="col-md-6">
+                                <div class="stat-card p-3 rounded bg-success">
+                                    <i class="bi bi-trophy text-white"></i>
+                                    <strong class="d-block text-white">{{ giveaway.winner.display_name }}</strong>
+                                    <small class="text-white-50">Winner</small>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Entry Status and Actions -->
+                    {% if giveaway.winner %}
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="bi bi-trophy me-2"></i>
+                            <div>
+                                <strong>Giveaway Complete!</strong>
+                                Winner: {{ giveaway.winner.display_name }}
+                                <br><small>Selected on {{ giveaway.winner_selected_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                    {% elif giveaway.is_ended %}
+                        <div class="alert alert-warning d-flex align-items-center">
+                            <i class="bi bi-clock me-2"></i>
+                            <div>
+                                <strong>Giveaway Ended</strong>
+                                <br><small>Ended on {{ giveaway.end_date.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                    {% elif not giveaway.is_active %}
+                        <div class="alert alert-secondary d-flex align-items-center">
+                            <i class="bi bi-pause-circle me-2"></i>
+                            <div>
+                                <strong>Giveaway Paused</strong>
+                                <br><small>This giveaway is temporarily inactive</small>
+                            </div>
+                        </div>
+                    {% elif user_entry %}
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <div>
+                                <strong>You're entered!</strong>
+                                <br><small>Entered on {{ user_entry.entered_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                    {% elif giveaway.max_entries and giveaway.entry_count >= giveaway.max_entries %}
+                        <div class="alert alert-warning d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <div>
+                                <strong>Entry Limit Reached</strong>
+                                <br><small>This giveaway has reached its maximum number of entries</small>
+                            </div>
+                        </div>
+                    {% elif giveaway.can_enter %}
+                        <form method="POST" action="{{ url_for('enter_giveaway', giveaway_id=giveaway.id) }}">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-gift me-2"></i>
+                                Enter Giveaway
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="text-center">
+                <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

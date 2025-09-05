@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Giveaway Central{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Profile Header -->
+            <div class="card profile-header mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            {% if current_user.profile_image_url %}
+                                <img src="{{ current_user.profile_image_url }}" alt="Profile Picture" 
+                                     class="rounded-circle profile-image">
+                            {% else %}
+                                <div class="profile-image-placeholder rounded-circle">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <h1 class="h2 mb-1">{{ current_user.display_name }}</h1>
+                            {% if current_user.email %}
+                                <p class="text-muted mb-1">{{ current_user.email }}</p>
+                            {% endif %}
+                            <small class="text-muted">
+                                Member since {{ current_user.created_at.strftime('%B %Y') }}
+                                {% if current_user.is_admin %}
+                                    <span class="badge bg-warning text-dark ms-2">
+                                        <i class="bi bi-shield-check me-1"></i>Admin
+                                    </span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-gift text-primary mb-2"></i>
+                            <h3 class="h4 mb-1">{{ entries|length }}</h3>
+                            <p class="text-muted mb-0">Giveaways Entered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-trophy text-warning mb-2"></i>
+                            <h3 class="h4 mb-1">{{ won_giveaways|length }}</h3>
+                            <p class="text-muted mb-0">Giveaways Won</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-percent text-success mb-2"></i>
+                            <h3 class="h4 mb-1">
+                                {% if entries|length > 0 %}
+                                    {{ "%.1f"|format((won_giveaways|length / entries|length) * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h3>
+                            <p class="text-muted mb-0">Win Rate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Won Giveaways -->
+            {% if won_giveaways %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">
+                            <i class="bi bi-trophy text-warning me-2"></i>
+                            Giveaways Won
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for giveaway in won_giveaways %}
+                                <div class="col-md-6">
+                                    <div class="card winner-highlight">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-1">{{ giveaway.title }}</h6>
+                                            <p class="card-text text-muted mb-2">
+                                                <i class="bi bi-trophy me-1"></i>
+                                                {{ giveaway.prize }}
+                                            </p>
+                                            <small class="text-muted">
+                                                Won on {{ giveaway.winner_selected_at.strftime('%B %d, %Y') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Entered Giveaways -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-list-check me-2"></i>
+                        Giveaway Entries
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if entries %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Giveaway</th>
+                                        <th>Prize</th>
+                                        <th>Status</th>
+                                        <th>Entered</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in entries %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ entry.giveaway.title }}</strong>
+                                            </td>
+                                            <td class="text-muted">{{ entry.giveaway.prize }}</td>
+                                            <td>
+                                                {% if entry.giveaway.winner_id == current_user.id %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-trophy me-1"></i>Won
+                                                    </span>
+                                                {% elif entry.giveaway.winner_id %}
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-x-circle me-1"></i>Lost
+                                                    </span>
+                                                {% elif entry.giveaway.is_ended %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-clock me-1"></i>Ended
+                                                    </span>
+                                                {% elif entry.giveaway.is_active %}
+                                                    <span class="badge bg-primary">
+                                                        <i class="bi bi-play-circle me-1"></i>Active
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-pause-circle me-1"></i>Paused
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-muted">
+                                                {{ entry.entered_at.strftime('%b %d, %Y') }}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('giveaway_detail', giveaway_id=entry.giveaway.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-gift display-4 text-muted mb-3"></i>
+                            <h5 class="text-muted">No Giveaway Entries Yet</h5>
+                            <p class="text-muted">Start entering giveaways to see them here!</p>
+                            <a href="{{ url_for('home') }}" class="btn btn-primary">
+                                Browse Giveaways
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

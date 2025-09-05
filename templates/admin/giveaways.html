@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Giveaways - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">
+            <i class="bi bi-gift me-2"></i>
+            Manage Giveaways
+        </h1>
+        <a href="{{ url_for('create_giveaway') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>
+            Create New Giveaway
+        </a>
+    </div>
+
+    <!-- Giveaways Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if giveaways.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Prize</th>
+                                <th>Status</th>
+                                <th>Entries</th>
+                                <th>End Date</th>
+                                <th>Winner</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for giveaway in giveaways.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ giveaway.title }}</strong>
+                                        {% if giveaway.max_entries %}
+                                            <br><small class="text-muted">Max: {{ giveaway.max_entries }} entries</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted">{{ giveaway.prize }}</td>
+                                    <td>
+                                        {% if giveaway.winner_id %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-trophy me-1"></i>Complete
+                                            </span>
+                                        {% elif giveaway.is_ended %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock me-1"></i>Ended
+                                            </span>
+                                        {% elif giveaway.is_active %}
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-play-circle me-1"></i>Active
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-pause-circle me-1"></i>Inactive
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">{{ giveaway.entry_count }}</span>
+                                        {% if giveaway.max_entries %}
+                                            / {{ giveaway.max_entries }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted">
+                                        {{ giveaway.end_date.strftime('%b %d, %Y') }}
+                                        <br><small>{{ giveaway.end_date.strftime('%I:%M %p') }}</small>
+                                    </td>
+                                    <td>
+                                        {% if giveaway.winner %}
+                                            <span class="text-success">
+                                                <i class="bi bi-trophy me-1"></i>
+                                                {{ giveaway.winner.display_name }}
+                                            </span>
+                                            <br><small class="text-muted">
+                                                {{ giveaway.winner_selected_at.strftime('%b %d, %Y') }}
+                                            </small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('giveaway_detail', giveaway_id=giveaway.id) }}" 
+                                               class="btn btn-outline-secondary" title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('edit_giveaway', giveaway_id=giveaway.id) }}" 
+                                               class="btn btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% if not giveaway.winner_id and giveaway.entries %}
+                                                <form method="POST" action="{{ url_for('select_winner', giveaway_id=giveaway.id) }}" 
+                                                      class="d-inline" onsubmit="return confirm('Are you sure you want to select a winner for {{ giveaway.title }}?')">
+                                                    <button type="submit" class="btn btn-outline-success" title="Select Winner">
+                                                        <i class="bi bi-trophy"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            <form method="POST" action="{{ url_for('delete_giveaway', giveaway_id=giveaway.id) }}" 
+                                                  class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ giveaway.title }}? This action cannot be undone.')">
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if giveaways.pages > 1 %}
+                    <nav aria-label="Giveaways pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if giveaways.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_giveaways', page=giveaways.prev_num) }}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in giveaways.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != giveaways.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_giveaways', page=page_num) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if giveaways.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_giveaways', page=giveaways.next_num) }}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-gift display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No Giveaways Yet</h4>
+                    <p class="text-muted">Create your first giveaway to get started!</p>
+                    <a href="{{ url_for('create_giveaway') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Create Giveaway
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
