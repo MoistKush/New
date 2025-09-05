@@ -30,6 +30,25 @@
                         <p class="fs-5 mb-0">{{ giveaway.prize }}</p>
                     </div>
                     
+                    <!-- Ticket Cost -->
+                    <div class="ticket-cost-section mb-4">
+                        <h4 class="h5 mb-2">
+                            <i class="bi bi-ticket me-2"></i>Entry Cost
+                        </h4>
+                        <p class="fs-5 mb-0">
+                            <i class="bi bi-coin text-warning me-1"></i>
+                            <span class="fw-bold text-warning">{{ giveaway.ticket_price }}</span> coins
+                        </p>
+                        {% if current_user.is_authenticated %}
+                            <small class="text-muted">
+                                Your balance: 
+                                <span class="{% if current_user.currency_balance >= giveaway.ticket_price %}text-success{% else %}text-danger{% endif %}">
+                                    {{ current_user.currency_balance }} coins
+                                </span>
+                            </small>
+                        {% endif %}
+                    </div>
+                    
                     <!-- Description -->
                     {% if giveaway.description %}
                         <div class="description-section mb-4">
@@ -117,12 +136,22 @@
                             </div>
                         </div>
                     {% elif giveaway.can_enter %}
-                        <form method="POST" action="{{ url_for('enter_giveaway', giveaway_id=giveaway.id) }}">
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <i class="bi bi-gift me-2"></i>
-                                Enter Giveaway
-                            </button>
-                        </form>
+                        {% if current_user.currency_balance >= giveaway.ticket_price %}
+                            <form method="POST" action="{{ url_for('enter_giveaway', giveaway_id=giveaway.id) }}">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-ticket me-2"></i>
+                                    Buy Ticket ({{ giveaway.ticket_price }} coins)
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-warning d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <div>
+                                    <strong>Insufficient Coins</strong>
+                                    <br><small>You need {{ giveaway.ticket_price - current_user.currency_balance }} more coins to enter</small>
+                                </div>
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

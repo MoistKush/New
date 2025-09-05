@@ -121,6 +121,17 @@
                             </div>
                         </div>
 
+                        <!-- Ticket Price -->
+                        <div class="mb-3">
+                            <label for="ticket_price" class="form-label">
+                                <i class="bi bi-coin me-1"></i>
+                                Ticket Price <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="ticket_price" name="ticket_price" 
+                                   min="1" value="{{ giveaway.ticket_price }}" required>
+                            <div class="form-text">Cost in coins for users to enter this giveaway</div>
+                        </div>
+
                         <!-- Active Status -->
                         <div class="mb-4">
                             <div class="form-check">

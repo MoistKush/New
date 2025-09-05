@@ -44,6 +44,7 @@ def create_giveaway():
         prize = request.form['prize']
         end_date_str = request.form['end_date']
         max_entries = request.form.get('max_entries', type=int)
+        ticket_price = request.form.get('ticket_price', type=int) or 100
         
         try:
             end_date = datetime.fromisoformat(end_date_str.replace('T', ' '))
@@ -54,6 +55,7 @@ def create_giveaway():
             giveaway.prize = prize
             giveaway.end_date = end_date
             giveaway.max_entries = max_entries if max_entries else None
+            giveaway.ticket_price = ticket_price
             
             db.session.add(giveaway)
             db.session.commit()
@@ -76,6 +78,7 @@ def edit_giveaway(giveaway_id):
         giveaway.prize = request.form['prize']
         end_date_str = request.form['end_date']
         giveaway.max_entries = request.form.get('max_entries', type=int) or None
+        giveaway.ticket_price = request.form.get('ticket_price', type=int) or 100
         giveaway.is_active = 'is_active' in request.form
         
         try:
@@ -144,4 +147,31 @@ def toggle_user_admin(user_id):
     
     status = 'granted' if user.is_admin else 'revoked'
     flash(f'Admin access {status} for {user.display_name}.', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/users/<user_id>/grant_currency', methods=['POST'])
+@require_admin
+def grant_currency(user_id):
+    user = User.query.get_or_404(user_id)
+    amount = request.form.get('amount', type=int)
+    
+    if not amount or amount <= 0:
+        flash('Please enter a valid positive amount.', 'error')
+        return redirect(url_for('admin_users'))
+    
+    # Add currency to user
+    user.currency_balance += amount
+    
+    # Create transaction record
+    from models import Transaction
+    transaction = Transaction()
+    transaction.user_id = user_id
+    transaction.amount = amount
+    transaction.transaction_type = 'admin_grant'
+    transaction.description = f'Currency granted by admin: {current_user.display_name}'
+    
+    db.session.add(transaction)
+    db.session.commit()
+    
+    flash(f'Granted {amount} coins to {user.display_name}. New balance: {user.currency_balance}', 'success')
     return redirect(url_for('admin_users'))

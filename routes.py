@@ -67,6 +67,11 @@ def enter_giveaway(giveaway_id):
         flash('This giveaway is no longer accepting entries.', 'error')
         return redirect(url_for('giveaway_detail', giveaway_id=giveaway_id))
     
+    # Check if user can afford the ticket
+    if not giveaway.can_user_afford(current_user):
+        flash(f'You need {giveaway.ticket_price} coins to enter this giveaway. You have {current_user.currency_balance} coins.', 'error')
+        return redirect(url_for('giveaway_detail', giveaway_id=giveaway_id))
+    
     # Check if user already entered
     existing_entry = Entry.query.filter_by(
         user_id=current_user.id,
@@ -78,12 +83,29 @@ def enter_giveaway(giveaway_id):
         return redirect(url_for('giveaway_detail', giveaway_id=giveaway_id))
     
     try:
+        # Deduct currency from user
+        current_user.currency_balance -= giveaway.ticket_price
+        
+        # Create entry record
         entry = Entry()
         entry.user_id = current_user.id
         entry.giveaway_id = giveaway_id
+        entry.cost_paid = giveaway.ticket_price
+        
+        # Create transaction record
+        from models import Transaction
+        transaction = Transaction()
+        transaction.user_id = current_user.id
+        transaction.amount = -giveaway.ticket_price
+        transaction.transaction_type = 'ticket_purchase'
+        transaction.description = f'Entered giveaway: {giveaway.title}'
+        transaction.related_giveaway_id = giveaway_id
+        
         db.session.add(entry)
+        db.session.add(transaction)
         db.session.commit()
-        flash('Successfully entered the giveaway!', 'success')
+        
+        flash(f'Successfully entered the giveaway for {giveaway.ticket_price} coins!', 'success')
     except IntegrityError:
         db.session.rollback()
         flash('Error entering giveaway. Please try again.', 'error')

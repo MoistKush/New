@@ -62,7 +62,7 @@
                         </div>
 
                         <!-- Max Entries -->
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label for="max_entries" class="form-label">
                                 <i class="bi bi-people me-1"></i>
                                 Maximum Entries (Optional)
@@ -70,6 +70,17 @@
                             <input type="number" class="form-control" id="max_entries" name="max_entries" 
                                    min="1" placeholder="Leave empty for unlimited entries">
                             <div class="form-text">Limit the number of people who can enter (optional)</div>
+                        </div>
+
+                        <!-- Ticket Price -->
+                        <div class="mb-4">
+                            <label for="ticket_price" class="form-label">
+                                <i class="bi bi-coin me-1"></i>
+                                Ticket Price <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="ticket_price" name="ticket_price" 
+                                   min="1" value="100" required>
+                            <div class="form-text">Cost in coins for users to enter this giveaway</div>
                         </div>
 
                         <!-- Action Buttons -->

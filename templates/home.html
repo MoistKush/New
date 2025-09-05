@@ -43,9 +43,13 @@
                                         {% endif %}
                                     </div>
                                     
-                                    <p class="card-text text-muted mb-3">
+                                    <p class="card-text text-muted mb-2">
                                         <i class="bi bi-trophy me-1"></i>
                                         {{ giveaway.prize }}
+                                    </p>
+                                    <p class="card-text mb-3">
+                                        <i class="bi bi-coin text-warning me-1"></i>
+                                        <span class="fw-bold text-warning">{{ giveaway.ticket_price }}</span> coins
                                     </p>
                                     
                                     {% if giveaway.description %}
@@ -66,11 +70,13 @@
                                 
                                 <div class="card-footer bg-transparent">
                                     <a href="{{ url_for('giveaway_detail', giveaway_id=giveaway.id) }}" 
-                                       class="btn btn-primary w-100">
+                                       class="btn {% if giveaway.id in user_giveaway_ids %}btn-success{% elif current_user.currency_balance >= giveaway.ticket_price %}btn-primary{% else %}btn-secondary{% endif %} w-100">
                                         {% if giveaway.id in user_giveaway_ids %}
-                                            View Details
+                                            <i class="bi bi-check-circle me-1"></i>View Details
+                                        {% elif current_user.currency_balance >= giveaway.ticket_price %}
+                                            <i class="bi bi-ticket me-1"></i>Buy Ticket
                                         {% else %}
-                                            Enter Giveaway
+                                            <i class="bi bi-coin me-1"></i>Need More Coins
                                         {% endif %}
                                     </a>
                                 </div>

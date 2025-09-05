@@ -14,12 +14,14 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String, nullable=True)
     profile_image_url = db.Column(db.String, nullable=True)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    currency_balance = db.Column(db.Integer, default=1000, nullable=False)  # Start with 1000 coins
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     # Relationships
     entries = db.relationship('Entry', backref='user', lazy=True, cascade='all, delete-orphan')
+    transactions = db.relationship('Transaction', backref='user', lazy=True, cascade='all, delete-orphan')
     
     @property
     def display_name(self):
@@ -57,6 +59,7 @@ class Giveaway(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     winner_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
     winner_selected_at = db.Column(db.DateTime, nullable=True)
+    ticket_price = db.Column(db.Integer, default=100, nullable=False)  # Cost in currency to enter
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -76,6 +79,10 @@ class Giveaway(db.Model):
         if self.max_entries and self.entry_count >= self.max_entries:
             return False
         return True
+    
+    def can_user_afford(self, user):
+        """Check if user can afford the ticket price"""
+        return user.currency_balance >= self.ticket_price
     
     @property
     def entry_count(self):
@@ -99,6 +106,20 @@ class Entry(db.Model):
     user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
     giveaway_id = db.Column(db.Integer, db.ForeignKey('giveaways.id'), nullable=False)
     entered_at = db.Column(db.DateTime, default=datetime.now)
+    cost_paid = db.Column(db.Integer, nullable=False)  # Amount of currency paid for this entry
     
     # Ensure a user can only enter once per giveaway
     __table_args__ = (UniqueConstraint('user_id', 'giveaway_id', name='uq_user_giveaway'),)
+
+class Transaction(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)  # Positive for earning, negative for spending
+    transaction_type = db.Column(db.String(50), nullable=False)  # 'ticket_purchase', 'admin_grant', 'bonus', etc.
+    description = db.Column(db.String(200), nullable=True)
+    related_giveaway_id = db.Column(db.Integer, db.ForeignKey('giveaways.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    related_giveaway = db.relationship('Giveaway', backref='transactions')
