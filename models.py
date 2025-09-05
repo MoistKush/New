@@ -73,18 +73,21 @@ class Giveaway(db.Model):
     def can_enter(self):
         if not self.is_active or self.is_ended or self.winner_id:
             return False
-        if self.max_entries and len(self.entries) >= self.max_entries:
+        if self.max_entries and self.entry_count >= self.max_entries:
             return False
         return True
     
     @property
     def entry_count(self):
-        return len(self.entries)
+        from app import db
+        return db.session.query(Entry).filter_by(giveaway_id=self.id).count()
     
     def select_winner(self):
         """Select a random winner from entries"""
-        if self.entries and not self.winner_id:
-            winner_entry = random.choice(self.entries)
+        from app import db
+        entries_list = db.session.query(Entry).filter_by(giveaway_id=self.id).all()
+        if entries_list and not self.winner_id:
+            winner_entry = random.choice(entries_list)
             self.winner_id = winner_entry.user_id
             self.winner_selected_at = datetime.now()
             return winner_entry.user

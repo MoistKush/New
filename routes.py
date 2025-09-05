@@ -78,7 +78,9 @@ def enter_giveaway(giveaway_id):
         return redirect(url_for('giveaway_detail', giveaway_id=giveaway_id))
     
     try:
-        entry = Entry(user_id=current_user.id, giveaway_id=giveaway_id)
+        entry = Entry()
+        entry.user_id = current_user.id
+        entry.giveaway_id = giveaway_id
         db.session.add(entry)
         db.session.commit()
         flash('Successfully entered the giveaway!', 'success')

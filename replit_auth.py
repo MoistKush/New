@@ -31,14 +31,14 @@ class UserSessionStorage(BaseStorage):
 
     def get(self, blueprint):
         try:
-            token = db.session.query(OAuth).filter_by(
+            oauth_record = db.session.query(OAuth).filter_by(
                 user_id=current_user.get_id(),
                 browser_session_key=g.browser_session_key,
                 provider=blueprint.name,
-            ).one().token
+            ).one()
+            return oauth_record.token
         except NoResultFound:
-            token = None
-        return token
+            return None
 
     def set(self, blueprint, token):
         db.session.query(OAuth).filter_by(
@@ -161,6 +161,7 @@ def require_login(f):
 
         expires_in = replit.token.get('expires_in', 0)
         if expires_in < 0:
+            issuer_url = os.environ.get('ISSUER_URL', "https://replit.com/oidc")
             refresh_token_url = issuer_url + "/token"
             try:
                 token = replit.refresh_token(token_url=refresh_token_url,

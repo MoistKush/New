@@ -48,13 +48,12 @@ def create_giveaway():
         try:
             end_date = datetime.fromisoformat(end_date_str.replace('T', ' '))
             
-            giveaway = Giveaway(
-                title=title,
-                description=description,
-                prize=prize,
-                end_date=end_date,
-                max_entries=max_entries if max_entries else None
-            )
+            giveaway = Giveaway()
+            giveaway.title = title
+            giveaway.description = description
+            giveaway.prize = prize
+            giveaway.end_date = end_date
+            giveaway.max_entries = max_entries if max_entries else None
             
             db.session.add(giveaway)
             db.session.commit()
